@@ -31,9 +31,9 @@ import * from wizAPI
 player = wizAPI().register_window()
 
 (
-  player.hold_key('w', 3)
+  player.hold_key('s', 3)
   .face_arrow()
-  .hold_key('a', 3)
+  .hold_key('w', 3)
 )
 
 player.wait_for_our_turn()
