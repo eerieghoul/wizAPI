@@ -13,24 +13,30 @@ class wizAPI:
         self._enemy_area = (68, 26, 650, 35)
 
     def wait(self, s):
+        """ Alias for time.sleep() that return self for function chaining """
         time.sleep(s)
         return self
 
     def register_window(self, name="Wizard101", nth=0):
+        """ Assigns the instance to a wizard101 window (Required before using any other API functions) """
         def win_enum_callback(handle, param):
             if name == str(win32gui.GetWindowText(handle)):
                 param.append(handle)
 
         handles = []
+        # Get all windows with the name "Wizard101"
         win32gui.EnumWindows(win_enum_callback, handles)
         handles.sort()
+        # Assigns the one at index nth
         self._handle = handles[nth]
         return self
 
     def is_active(self):
+        """ Returns true if the window is focused """
         return self._handle == win32gui.GetForegroundWindow()
 
     def set_active(self):
+        """ Sets the window to active if it isn't already """
         if not self.is_active():
             """ Press alt before and after to prevent a nasty bug """
             pyautogui.press('alt')
@@ -39,11 +45,14 @@ class wizAPI:
         return self
 
     def get_window_rect(self):
-        """Get the bounding rectangle of the window"""
+        """Get the bounding rectangle of the window """
         rect = win32gui.GetWindowRect(self._handle)
         return [rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1]]
 
     def match_image(self, largeImg, smallImg, threshold=0.1, debug=False):
+        """ Finds smallImg in largeImg using template matching """
+        """ Adjust threshold for the precision of the match (between 0 and 1, the lowest being more precise """
+        """ Returns false if no match was found with the given threshold """
         method = cv2.TM_SQDIFF_NORMED
 
         # Read the images from the file
@@ -81,16 +90,19 @@ class wizAPI:
         return (x + (w * 0.5), y + (h * 0.5))
 
     def pixel_matches_color(self, coords, rgb, tolerance=0):
+        """ Matches the color of a pixel relative to the window's position """
         wx, wy = self.get_window_rect()[:2]
         x, y = coords
         return pyautogui.pixelMatchesColor(x + wx, y + wy, rgb, tolerance=tolerance)
 
     def move_mouse(self, x, y, speed=.5):
+        """ Moves to mouse to the position (x, y) relative to the window's position """
         wx, wy = self.get_window_rect()[:2]
         pyautogui.moveTo(wx + x, wy + y, speed)
         return self
 
     def click(self, x, y, delay=.1, speed=.5, button='left'):
+        """ Moves the mouse to (x, y) relative to the window and presses the mouse button """
         (self.set_active()
          .move_mouse(x, y, speed=speed)
          .wait(delay))
@@ -99,11 +111,17 @@ class wizAPI:
         return self
 
     def screenshot(self, name, region=False):
+        """ 
+        - Captures a screenshot of the window and saves it to 'name' 
+        - Can also be used the capture specific parts of the window by passing in the region arg. (x, y, width, height) (Relative to the window position) 
+
+        """
         self.set_active()
         # region should be a tuple
         # Example: (x, y, width, height)
         window = self.get_window_rect()
         if not region:
+            # Set the default region to the area of the window
             region = window
         else:
             # Adjust the region so that it is relative to the window
@@ -115,6 +133,12 @@ class wizAPI:
         pyautogui.screenshot(name, region=region)
 
     def teleport_to_friend(self, match_img):
+        """
+        Completes a set of actions to teleport to a friend.
+        The friend must have the proper symbol next to it
+        symbol must match the image passed as 'match_img'
+
+        """
         self.set_active()
         # Check if friends already opened (and close it)
         while self.pixel_matches_color((780, 364), (230, 0, 0), 40):
@@ -142,16 +166,20 @@ class wizAPI:
             return False
 
     def enter_dungeon_dialog(self):
+        """ Detects if the 'Enter Dungeon' dialog is present """
         self.set_active()
         return (self.pixel_matches_color((253, 550), (4, 195, 4), 5) and
                 self.pixel_matches_color((284, 550), (20, 218, 11), 5))
 
     def is_DS_loading(self):
-        self.set_active()
         """ Matches an orange pixel in the Dragonspyre loading screen """
+        self.set_active()
         return self.pixel_matches_color((108, 551), (252, 127, 5), 20)
 
     def hold_key(self, key, holdtime):
+        """ 
+        Holds a key for a specific amount of time, usefull for moving with the W A S D keys 
+        """
         self.set_active()
         pyautogui.keyDown(key)
         time.sleep(holdtime)
@@ -159,6 +187,9 @@ class wizAPI:
         return self
 
     def press_key(self, key):
+        """
+        Presses a key, useful for pressing 'x' to enter a dungeon
+        """
         self.set_active()
         pyautogui.press(key)
         return self
@@ -179,7 +210,7 @@ class wizAPI:
             print('Mana is low, using potion')
         if health_low:
             print('Health is low, using potion')
-        # if mana_low or health_low:
+        if mana_low or health_low:
             self.click(160, 590, delay=.2)
 
     def pass_turn(self):
@@ -205,11 +236,11 @@ class wizAPI:
         return self
 
     def wait_for_end_of_round(self):
+        """ Similar to wait_for_next_turn, but also detects if its the end of the battle """
         """ Wait for spell round to begin """
         while self.is_turn_to_play():
             self.wait(1)
 
-        self.flush_spell_memory()
         """ Start detecting if it's our turn to play again """
         """ Or if it's the end of the battle """
         while not (self.is_turn_to_play() or self.is_idle()):
@@ -222,6 +253,12 @@ class wizAPI:
         return self.pixel_matches_color((140, 550), (252, 146, 206), 2)
 
     def find_spell(self, spell_name, threshold=0.15, max_tries=2, recapture=True):
+        """ 
+        Attempts the find the spell passed is 'spell_name'
+        returns False if not found with the given threshold
+        Use recapture=False to not re-take the screenshot of the spell_area
+        Adds spell position to memory for later use
+        """
         self.set_active()
         tries = 0
         res = False
@@ -251,6 +288,8 @@ class wizAPI:
             return False
 
     def find_unusable_spells(self, limit=-1):
+        """ Returns an array of the positions of unusable spells (grayed out) """
+        """ Useful for farming Loremaster, it prevents getting a crowded deck if you learn a new spell """
         self.set_active()
         self.mouse_out_of_area(self._spell_area)
         self.screenshot('spell_area.png', region=self._spell_area)
@@ -315,10 +354,19 @@ class wizAPI:
             self.flush_spell_memory()
 
     def flush_spell_memory(self):
+        """ 
+        This action gets called everytime there is a destructive action to the spells (The spells change position)
+        For example: Casting, Enchanting, Discarding
+        """
         self._spell_memory = {}
         return
 
     def select_spell(self, spell):
+        """ 
+        Clicks on a spell
+        Attemps to look in memory to see if we already have found this spell
+        Returns false if the spell can't be found
+        """
         try:
             spell_pos = self._spell_memory[spell]
         except KeyError:
@@ -331,6 +379,10 @@ class wizAPI:
             return False
 
     def cast_spell(self, spell):
+        """ 
+        Clicks on the spell and clears memory cache
+        if the spell requires a target, chain it with .at_target([enemy_pos])
+        """
         if self.find_spell(spell):
             print('Casting', spell)
             self.flush_spell_memory()
@@ -339,6 +391,7 @@ class wizAPI:
             return False
 
     def enchant(self, spell_name, enchant_name, threshold=0.1, silent_fail=False):
+        """ Attemps the enchant 'spell_name' with 'enchant_name' """
         if self.find_spell(spell_name, threshold=threshold) and self.find_spell(enchant_name, recapture=False, threshold=threshold):
             print('Enchanting', spell_name, 'with', enchant_name)
             self.select_spell(enchant_name)
@@ -352,6 +405,14 @@ class wizAPI:
             return False
 
     def get_enemy_pos(self, enemy_img):
+        """ 
+        Attemps to find the position of an enemy the matches the image provided 
+        returns 1, 2, 3, or 4 if found
+        otherwise returns False
+
+        (In my example, the image to match is the balance symbol, as only the Loremaster has it in this fight. It could also be a screenshot of the name of the enemy in question)
+        """
+
         self.screenshot('enemy_area.png', region=self._enemy_area)
 
         found = self.match_image('enemy_area.png', enemy_img, threshold=.2)
@@ -364,13 +425,14 @@ class wizAPI:
             return False
 
     def at_target(self, target_pos):
-        """ Clicks the target """
+        """ Clicks the target, based on position 1, 2, 3, or 4 """
         x = (170 * (target_pos - 1)) + 130
         y = 50
         self.click(x, y, delay=.2)
         return self
 
     def mouse_out_of_area(self, area):
+        """ Move the mouse outside of an area, to make sure the mouse doesn't interfere with image matching """
         # Adjust the region so that it is relative to the window
         wx, wy = self.get_window_rect()[:2]
         region = list(area)
@@ -388,6 +450,7 @@ class wizAPI:
         return self
 
     def face_arrow(self):
+        """ Faces the questing arrow, useful for finding your way out of a dungeon """
         self.set_active()
         pyautogui.keyDown('a')
         count = 0
