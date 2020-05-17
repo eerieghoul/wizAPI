@@ -1,5 +1,4 @@
 wheel
 pyautogui >= 0.9
 opencv-python >= 4
-# Go to https://www.lfd.uci.edu/~gohlke/pythonlibs/#pywin32 to get the version the works with your installation of python
-# ./pywin32-227-cp36-cp36m-win_amd64.whl
+pywin32 >=227

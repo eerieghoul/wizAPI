@@ -3,11 +3,16 @@ import time
 import math
 
 """ Register windows """
-hitter = wizAPI().register_window(nth=1)
-feinter = wizAPI().register_window(nth=0)
+try:
+    hitter = wizAPI().register_window(nth=1)
+    feinter = wizAPI().register_window(nth=0)
+except IndexError:
+    print('You need 2 wizard101 accounts to run this particular bot. 1 or less accounts detected')
+    exit()
 
 """ compare x positions of windows to make sure 'hitter' is the farthest left, and 'feinter' is the farthest right """
 if (hitter.get_window_rect()[0] > feinter.get_window_rect()[0]):
+    # Switch them, if not
     hitter, feinter = feinter, hitter
 
 
