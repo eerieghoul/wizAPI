@@ -36,14 +36,14 @@ player = wizAPI().register_window()
   .hold_key('w', 3)
 )
 
-player.wait_for_our_turn()
+player.wait_for_next_turn()
 inFight = True
 
 while inFight:
-    (
-      player.enchant('tempest', 'epic')
-      .cast_spell('tempest-enchanted')
-    )
+    if player.enchant('tempest', 'epic') or player.find_spell('tempest_enchanted'):
+        player.cast_spell('tempest-enchanted')
+    else:
+        player.pass_turn()
 
     player.wait_for_end_of_round()
 
