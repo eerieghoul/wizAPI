@@ -14,11 +14,14 @@ The wizAPI.py file contains a large number of functions to interact with Wizard1
 
 # IMPORTANT
 
-Make sure your windows are set to an 800 x 600 resolution and your interface size is Medium
+Make sure your windows are set to an 800 x 600 resolution and your interface size is 'regular'
+A common issue is when the `scale` of your screen isn't at 100% (if it's lower or higher, pixels don't match up) you can check that in `display settings` on your desktop.
+
+### Has only been tested on Windows!
 
 To add your own spells, use the 'screenshot' function from the API when spell selection is opened.
 Take this image and crop it so that only the image of the spell is visible (see spells folder for examples)
-Rename it to the name of the spell, and add it to the spells folder.
+Rename it to the name of the spell, and add it to the spells folder. You can also use the windows snipping tool.
 
 I will probably add docs when I get the time.
 
@@ -27,7 +30,7 @@ I will probably add docs when I get the time.
 I coded this library to be very intuitive and easy to use. Here's an example script:
 
 ```
-import * from wizAPI
+from wizAPI import *
 player = wizAPI().register_window()
 
 (
