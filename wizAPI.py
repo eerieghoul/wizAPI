@@ -93,6 +93,7 @@ class wizAPI:
         """ Matches the color of a pixel relative to the window's position """
         wx, wy = self.get_window_rect()[:2]
         x, y = coords
+        # self.move_mouse(x, y)
         return pyautogui.pixelMatchesColor(x + wx, y + wy, rgb, tolerance=threshold)
 
     def move_mouse(self, x, y, speed=.5):
@@ -227,7 +228,7 @@ class wizAPI:
 
     def is_turn_to_play(self):
         """ matches a yellow pixel in the 'pass' button """
-        return self.pixel_matches_color((237, 398), (255, 255, 0), 20)
+        return self.pixel_matches_color((238, 398), (255, 255, 0), 20)
 
     def wait_for_next_turn(self):
         """ Wait for spell round to begin """
@@ -261,7 +262,7 @@ class wizAPI:
 
     def is_idle(self):
         """ Matches a pink pixel in the pet icon (only visible when not in battle) """
-        return self.pixel_matches_color((140, 550), (252, 146, 206), 2)
+        return self.pixel_matches_color((140, 554), (252, 146, 206), 2)
 
     def find_spell(self, spell_name, threshold=0.15, max_tries=2, recapture=True):
         """ 
