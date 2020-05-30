@@ -6,7 +6,7 @@ The wizAPI.py file contains a large number of functions to interact with Wizard1
 
 # How to run
 
-- Make sure you have python version >= 3 installed and that you've configured your environment PATH variable to include the path to your python installation (Standard stuff, Python 3.6 even does it for you)
+- Make sure you have python version 3.6 or 3.7 (3.8 has a bug with one of the dependencies of this program) installed and that you've configured your environment PATH variable to include the path to your python installation (Standard stuff, Python 3.6 even does it for you)
 - Open the terminal of you choice (can be cmd) and cd into the project folder
 - Run `python -m pip install -r requirements.txt` in the command line to install all dependencies
 - To run farm_loremaster.py type in `python farm_loremaster.py` (It needs 2 w101 windows opened for this particular bot)
