@@ -89,11 +89,11 @@ class wizAPI:
         # Return coordinates to center of match
         return (x + (w * 0.5), y + (h * 0.5))
 
-    def pixel_matches_color(self, coords, rgb, tolerance=0):
+    def pixel_matches_color(self, coords, rgb, threshold=0):
         """ Matches the color of a pixel relative to the window's position """
         wx, wy = self.get_window_rect()[:2]
         x, y = coords
-        return pyautogui.pixelMatchesColor(x + wx, y + wy, rgb, tolerance=tolerance)
+        return pyautogui.pixelMatchesColor(x + wx, y + wy, rgb, tolerance=threshold)
 
     def move_mouse(self, x, y, speed=.5):
         """ Moves to mouse to the position (x, y) relative to the window's position """
@@ -196,11 +196,19 @@ class wizAPI:
 
     def is_health_low(self):
         self.set_active()
-        return not self.pixel_matches_color((23, 563), (126, 41, 3), 10)
+        # Matches a pixel in the lower third of the health globe
+        POSITION = (23, 563)
+        COLOR = (126, 41, 3)
+        THRESHOLD = 10
+        return not self.pixel_matches_color(POSITION, COLOR, threshold=THRESHOLD)
 
     def is_mana_low(self):
         self.set_active()
-        return not self.pixel_matches_color((110, 594), (68, 13, 75), 10)
+        # Matches a pixel in the lower third of the mana globe
+        POSITION = (79, 591)
+        COLOR = (66, 13, 83)
+        THRESHOLD = 10
+        return not self.pixel_matches_color(POSITION, COLOR, threshold=THRESHOLD)
 
     def use_potion_if_needed(self):
         mana_low = self.is_mana_low()
@@ -214,11 +222,11 @@ class wizAPI:
             self.click(160, 590, delay=.2)
 
     def pass_turn(self):
-        self.click(254, 398, delay=.5)
+        self.click(254, 398, delay=.5).move_mouse(200, 400)
         return self
 
     def is_turn_to_play(self):
-        """ matches a pixel in the bottom right indicating the first player in battle """
+        """ matches a yellow pixel in the 'pass' button """
         return self.pixel_matches_color((237, 398), (255, 255, 0), 20)
 
     def wait_for_next_turn(self):
@@ -235,6 +243,10 @@ class wizAPI:
         print('Our turn to play')
         return self
 
+    def wait_for_turn_to_play(self):
+        while not self.is_turn_to_play():
+            self.wait(.5)
+
     def wait_for_end_of_round(self):
         """ Similar to wait_for_next_turn, but also detects if its the end of the battle """
         """ Wait for spell round to begin """
@@ -245,7 +257,6 @@ class wizAPI:
         """ Or if it's the end of the battle """
         while not (self.is_turn_to_play() or self.is_idle()):
             self.wait(1)
-
         return self
 
     def is_idle(self):
@@ -426,7 +437,7 @@ class wizAPI:
 
     def at_target(self, target_pos):
         """ Clicks the target, based on position 1, 2, 3, or 4 """
-        x = (170 * (target_pos - 1)) + 130
+        x = (174 * (target_pos - 1)) + 130
         y = 50
         self.click(x, y, delay=.2)
         return self
@@ -460,3 +471,18 @@ class wizAPI:
         pyautogui.keyUp('a')
         self.hold_key('d', min(count / 100, 0.2))
         return self
+
+    def count_enemies(self):
+        Y = 75
+        COLOR = (207, 186, 135)
+        num_enemies = 0
+        for i in range(4):
+            X = (174 * (i)) + 203
+            if self.pixel_matches_color((X, Y), COLOR, threshold=30):
+                num_enemies += 1
+
+        if num_enemies == 1:
+            print(num_enemies, 'enemy in battle')
+        else:
+            print(num_enemies, 'enemies in battle')
+        return num_enemies

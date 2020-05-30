@@ -50,6 +50,8 @@ while True:
 
     """ Attempt to enter the dungeon """
     time.sleep(1)
+    feinter.hold_key('s', .8).wait(1)
+
     while not feinter.enter_dungeon_dialog():
         (feinter.hold_key('w', 1.5)
          .hold_key('s', 2)
