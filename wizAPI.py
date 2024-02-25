@@ -228,7 +228,7 @@ class wizAPI:
 
     def is_turn_to_play(self):
         """ matches a yellow pixel in the 'pass' button """
-        return self.pixel_matches_color((238, 398), (255, 255, 0), 20)
+        return self.pixel_matches_color((243, 398), (255, 255, 0), 20)
 
     def wait_for_next_turn(self):
         """ Wait for spell round to begin """
@@ -243,7 +243,7 @@ class wizAPI:
 
         print('Our turn to play')
         return self
-
+    
     def wait_for_turn_to_play(self):
         while not self.is_turn_to_play():
             self.wait(.5)
@@ -274,6 +274,7 @@ class wizAPI:
         self.set_active()
         tries = 0
         res = False
+
         while not res and tries < max_tries:
             tries += 1
 
@@ -355,7 +356,7 @@ class wizAPI:
                 card_pos = self._spell_memory["unusable"][0]
             except (KeyError, IndexError):
                 result = self.find_unusable_spells(limit=1)
-                if len(result) is not 0:
+                if len(result) != 0:
                     card_pos = result[0]
                 else:
                     break
